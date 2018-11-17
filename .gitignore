@@ -5,4 +5,5 @@
 *.json
 *.tar
 
-/.ipynb_checkpoints
+/.ipynb_checkpoints/
+/eda/.ipynb_checkpoints/
