@@ -29,7 +29,9 @@ app.layout = html.Div(children=[
                 # {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
                 # {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
                     go.Histogram( x = final.transactionRevenue.dropna(), 
-                    marker=dict(color='green'), opacity=0.75), 
+                    xbins=dict(start=0, end=10**9, size = 10000000), 
+                    opacity = 0.7)
+                     
                     
             ],
             'layout': {
