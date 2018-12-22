@@ -14,13 +14,14 @@ final = pd.read_hdf('../../data/out/final.h5',
             )
 
 
-app.layout = html.Div(children=[
+app.layout = html.Div(style={'padding':10}, 
+children=[
     html.H1(children='Google store analytics',
             style = {'textAlign': 'center'}),
 
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
+    # html.Div(children='''
+    #     Dash: A web application framework for Python.
+    # '''),
 
     dcc.Graph(
         id='example-graph',
@@ -36,6 +37,25 @@ app.layout = html.Div(children=[
             ],
             'layout': {
                 'title': 'Dash Data Visualization'
+            }
+        }
+    ),
+
+
+    dcc.Graph(
+        id='example-graph1',
+        figure={
+            'data': [
+                # {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
+                # {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
+                    go.Histogram( x = final.transactionRevenue.dropna(), 
+                    xbins=dict(start=0, end=10**9, size = 10000000), 
+                    opacity = 0.7)
+                     
+                    
+            ],
+            'layout': {
+                'title': 'Dash Data Visualization1'
             }
         }
     )
