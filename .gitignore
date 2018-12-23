@@ -6,4 +6,4 @@
 *.tar
 
 /.ipynb_checkpoints/
-/eda/.ipynb_checkpoints/
+/src/notebook/.ipynb_checkpoints/
