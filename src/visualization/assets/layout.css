@@ -143,7 +143,8 @@ table{
     .two.columns                    { width: 16.25%;         }
     .three.columns                  { width: 22%;            }
     .four.columns                   { width: 33%;            }
-    .five.columns                   { width: 39.3333333333%; }
+    .five.columns                   { width: 45%; }
+    /* .five.columns                   { width: 39.3333333333%; } */
     .six.columns                    { width: 49.75%;          }
     .seven.columns                  { width: 56.6666666667%; }
     .eight.columns                  { width: 66.5%;          }
@@ -158,8 +159,8 @@ table{
     .one-half.column                { width: 48%; }
   
     /* Offsets */
-    .offset-by-halfed.column,
-    .offset-by-halfed.columns       { margin-left: 5%;             }
+    .offset-by-part.column,
+    .offset-by-part.columns         { margin-left: 5%;             }
     .offset-by-one.column,
     .offset-by-one.columns          { margin-left: 8.66666666667%; }
     .offset-by-two.column,

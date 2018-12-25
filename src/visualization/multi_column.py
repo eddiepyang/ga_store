@@ -11,13 +11,43 @@ final = pd.read_hdf('../../data/out/final.h5',
                     dtype = {'fullvisitorId':int, 'transactionRevenue':int}
             )
 final['log_transaction'] = np.log1p(final.transactionRevenue.astype(float))
-
+final['transactionRevenue'] = final.transactionRevenue.astype(float)
 
 # data variables
 channel_x = final.channelGrouping.value_counts(normalize=True).index
 channel_y = final.channelGrouping.value_counts(normalize=True)
 
+# line chart
+summary_time = final.groupby('date').transactionRevenue.sum()
+summary_n = final.groupby('date').transactionRevenue.count()
 
+def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
+                 x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
+    
+    data = go.Scatter(x=x , y=y, name='revenue')
+    data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='count')
+
+    layout = go.Layout(
+        title='Purchasing over time',
+        yaxis=dict(
+            title='revenues'
+        ),
+        yaxis2=dict(
+            title='number of customers',
+            titlefont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            tickfont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            overlaying='y',
+            side='right'
+        ))
+
+    fig = go.Figure(data=[data, data1], layout=layout)
+    return fig
+
+# with __name__ app will read from assets folder 
 app = dash.Dash(__name__)  # the name of the folder containing your code and static folder.
 # app.css.append_css({'external_url': '/static/reset.css'})
 # app.server.static_folder = 'static'
@@ -50,7 +80,7 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
                             opacity=0.6
                             )],
                     'layout': {
-                        'title': 'Dash Data Visualization1'}
+                        'title': 'Customer Sources'}
                         #'height': 800,
                     #     #'width': 1200
                     #     #'margin': dict(l=10, r=10, t=0, b=0)
@@ -63,7 +93,7 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
                 'padding': 1},
                 config={'displayModeBar': False}
                 )
-    ], className="five columns offset-by-one chart_div"),
+    ], className="five columns offset-by-part chart_div"),
    
         html.Div(#style = {'backgroundColor':'#D3D3D3'}, 
         children = [
@@ -81,7 +111,7 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
                     opacity = 0.7, marker={'color':'red'} 
                     )
                     ],
-                    'layout': go.Layout(bargap=0.1)
+                    'layout': go.Layout(bargap=0.1, title= 'Revenue Distribution')
             #'layout': f1
         }, style={#"height": "95%", "width": "95%", 
                 'display': 'inline-block', 
@@ -96,14 +126,14 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
 
         html.Div(#[html.H4('Line chart'), 
         [dcc.Graph(id='g3', 
-        figure={'data': [{'y': [1, 2, 3]}]},
+        figure=create_lines(),
         style={"height": "95%", "width": "95%", 
             'display': 'inline-block', 
             'text-align': 'center',
             'padding':1},
         config={'displayModeBar': False}
                 )], 
-        className="five columns offset-by-one chart_div"),
+        className="five columns offset-by-part chart_div"),
 
         html.Div(#[html.H4('Line chart'), 
         [dcc.Graph(id='g4', 
@@ -113,6 +143,7 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
     mode = 'markers'
         )],
         'layout': go.Layout(
+            title = "Visit Count at Transaction",
             xaxis=dict(
                     range = [0,30]
                     )
