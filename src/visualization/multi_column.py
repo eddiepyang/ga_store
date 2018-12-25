@@ -54,10 +54,14 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
                     #     #'margin': dict(l=10, r=10, t=0, b=0)
                     #             }
                     }, 
-                style={"height": "95%", "width": "95%", 'padding':5},
+                style={"height": "95%", 
+                "width": "95%", 
+                'display': 'inline-block', 
+                'text-align': 'center', 
+                'padding': 1},
                 config={'displayModeBar': False}
                 )
-    ], className="six columns chart_div"),
+    ], className="five columns offset-by-halfed chart_div"),
    
         html.Div(#style = {'backgroundColor':'#D3D3D3'}, 
         children = [
@@ -72,17 +76,31 @@ html.Div(#style = {'backgroundColor':'#D3D3D3'},
                     
                     go.Histogram( x = final.transactionRevenue.dropna(), 
                     xbins=dict(start=0, end=10**9, size = 10000000), 
-                    opacity = 0.7)
-                    ]
+                    opacity = 0.7, marker={'color':'red'} 
+                    )
+                    ],
+                    'layout': go.Layout(bargap=0.1)
             #'layout': f1
-        }, style={"height": "95%", "width": "95%", 'padding':5},
-           config={'displayModeBar': False}
-    ),
-            dcc.Graph(id='g3', figure={'data': [{'y': [1, 2, 3]}]},
-            style={"height": "95%", "width": "95%", 'padding':5},
-           config={'displayModeBar': False})
-        ], className="six columns chart_div"),
-    ], className="row")
+        }, style={#"height": "95%", "width": "95%", 
+                'display': 'inline-block', 
+                'text-align': 'center',
+                'padding':1},
+           config={'displayModeBar': False} 
+           
+    )
+        ], className="five columns chart_div"),
+    ], className="row"),
+    
+        html.Div([html.H4('Line chart'), dcc.Graph(id='g3', 
+        figure={'data': [{'y': [1, 2, 3]}]},
+        style={"height": "95%", "width": "95%", 
+            'display': 'inline-block', 
+            'text-align': 'center',
+            'padding':1},
+        config={'displayModeBar': False}
+                )], 
+        className="five columns offset-by-halfed chart_div ")
+        
 ])
 
 if __name__ == '__main__':
