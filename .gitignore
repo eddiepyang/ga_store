@@ -4,8 +4,8 @@
 *.tsv
 *.json
 *.tar
-*.h5
+#*.h5
 
-/.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
 /src/.ipynb_checkpoints/
 src/__pycache__/
