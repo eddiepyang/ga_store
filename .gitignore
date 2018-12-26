@@ -1,5 +1,5 @@
 
-*.csv
+/data/input/*.csv
 /data/input/*.zip
 *.tsv
 *.json
