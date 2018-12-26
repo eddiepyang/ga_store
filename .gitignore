@@ -1,10 +1,10 @@
 
 *.csv
-*.zip
+/data/input/*.zip
 *.tsv
 *.json
 *.tar
-#*.h5
+*.h5
 
 */.ipynb_checkpoints/*
 /src/.ipynb_checkpoints/
