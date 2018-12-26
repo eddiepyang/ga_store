@@ -10,7 +10,8 @@ final = pd.read_hdf('../../data/out/final.h5',
                     parse_dates = ['date', 'visitStartTime'], 
                     dtype = {'fullvisitorId':int, 'transactionRevenue':int}
             )
-#final.to_csv('../../data/out/final.csv')
+final=final.loc[final.transactionRevenue.dropna().index]
+final.to_csv('../../data/out/final.csv')
 final['log_transaction'] = np.log1p(final.transactionRevenue.astype(float))
 final['transactionRevenue'] = final.transactionRevenue.astype(float)
 
