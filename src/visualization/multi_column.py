@@ -21,34 +21,7 @@ channel_y = final.channelGrouping.value_counts(normalize=True)
 # line chart
 summary_time = final.groupby('date').transactionRevenue.sum()
 summary_n = final.groupby('date').transactionRevenue.count()
-
-# def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
-#                  x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
     
-#     data = go.Scatter(x=x , y=y, name='revenues')
-#     data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='customers')
-
-#     layout = go.Layout(
-#         title='Purchasing over time',
-#         yaxis=dict(
-#             title='revenues'
-#         ),
-#         yaxis2=dict(
-#             title='number of customers',
-#             titlefont=dict(
-#                 color='rgb(148, 103, 189)'
-#             ),
-#             tickfont=dict(
-#                 color='rgb(148, 103, 189)'
-#             ),
-#             overlaying='y',
-#             side='right'
-#         )
-#     )
-
-#     return go.Figure(data=[data, data1], layout=layout)
-    
-
 s1 = {"height": "95%", "width": "95%", 
                     'display': 'inline-block', 
                     'text-align': 'center', 
@@ -63,16 +36,59 @@ server=app.server
 # start of main program
 app.layout = html.Div( 
     children = [html.Div([
+    
     # header
-        html.Span('Google store charts', style={'textAlign': 'center'}, 
-        className='app-title')], 
-        className = 'row header'), 
+    html.Span('Google store charts', style={'textAlign': 'center'}, 
+    className='app-title')], 
+    className = 'row header'), 
+
+    # dropdown menu
+    html.Div([
+        html.Div([
+            dcc.Dropdown(
+                        id='yaxis-column',
+                        options=[{'label': i, 'value': i} for i in final.country.unique()],
+                        value='United States')], 
+        style = {'display': 'inline-block', 'float': 'left'},
+        className= 'five columns offset-by-part chart_div'),
+
+        html.Div(
+            dcc.RangeSlider(id ='count range',
+                        min = 0,
+                        max = 100,
+                        step = 10,
+                        marks = {i*10:f'{i*10}' for i in range(11)},
+                        value = [0,60]),
+        style = {'display': 'inline-block', 'float': 'bottom'},
+        className = 'five columns chart_div')],
+
+    className = 'row'),
+
     # row 1
+    html.Div([
+        
+        html.Div([
+        
+        dcc.Graph(id='g1',
+        style=s1,
+        config={'displayModeBar': False}
+        )], 
+        className="five columns offset-by-part chart_div"),
+    
+    html.Div( 
+        [dcc.Graph(id='g2', 
+                style=s1,
+                config={'displayModeBar': False}
+                        )], 
+                className="five columns chart_div"),
+    ], className='row'),
+                            
+    # row 2
     html.Div(
         children = [html.Div([
                 #html.H3('Google store charts'),
                 dcc.Graph(
-                    id='g1',
+                    id='g3',
                     figure={
                         'data': [go.Bar(
                                 x=channel_x,
@@ -96,7 +112,7 @@ app.layout = html.Div(
             html.Div( 
             children = [
                 dcc.Graph(
-                id='g2',
+                id='g4',
                 figure={
                     'data': [
                             go.Histogram( x = final.transactionRevenue.dropna(), 
@@ -111,50 +127,12 @@ app.layout = html.Div(
             
                 )
             ], className="five columns chart_div"),
-        ], className="row"),
-
-    html.Div(
-        html.Div([dcc.Dropdown(
-                        id='yaxis-column',
-                        options=[{'label': i, 'value': i} for i in final.country.unique()],
-                        value='United States')], 
-    style={'display': 'inline-block', 'float': 'left'},
-    className= 'five columns offset-by-part chart_div'),
-    className='row'),
-
-# row 2
-    html.Div([
-        
-        html.Div([
-        
-        dcc.Graph(id='g3',
-        style=s1,
-        config={'displayModeBar': False}
-        )], 
-        className="five columns offset-by-part chart_div"),
-    
-    html.Div( 
-        [dcc.Graph(id='g4', 
-        figure = {'data': [go.Scatter(
-    x = final.visitNumber,
-    y = final.log_transaction,
-    mode = 'markers'
-        )],
-        'layout': go.Layout(
-            title = "Revenue by Number of Visits",
-            xaxis=dict(
-                    range = [0,30]
-                    )
-        )},
-                style=s1,
-                config={'displayModeBar': False}
-                        )], 
-                className="five columns chart_div"),
-    ], className='row')
+        ], className="row")
 ])
 
+# callbacks
 @app.callback(
-    dash.dependencies.Output('g3', 'figure'),
+    dash.dependencies.Output('g1', 'figure'),
     [dash.dependencies.Input('yaxis-column', 'value')]
 )
 
@@ -192,6 +170,40 @@ def create_lines(country):
 
     fig = go.Figure(data=[data, data1], layout=layout)
     return fig
+
+
+@app.callback(
+    dash.dependencies.Output(component_id='g2', component_property='figure'),
+    [dash.dependencies.Input(component_id='count range', component_property='value')]
+)
+
+
+def create_scatter(rng):
+    
+    final['transactionRevenue'] = final.transactionRevenue.astype(float)
+    num_visits = final.groupby('fullVisitorId').visitNumber.max()
+    user_revenue = np.log(final[['fullVisitorId', 'transactionRevenue']].dropna().groupby('fullVisitorId').transactionRevenue.sum())
+    res = pd.concat([num_visits, user_revenue], axis=1).dropna()
+
+    # Create a trace
+    trace = go.Scatter(
+        x = res.visitNumber,
+        y = res.transactionRevenue,
+        mode = 'markers'
+    )
+
+    layout = go.Layout(title = 'Revenue by Visit',
+        xaxis = {'title': 'Visit Count',
+                'range': rng
+               },
+        yaxis = {'title': 'Log Transaction'
+                }
+    )
+    
+    data = [trace]
+
+    return go.Figure(data, layout)
+
 
 
 if __name__ == '__main__':

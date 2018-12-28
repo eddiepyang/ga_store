@@ -22,14 +22,159 @@ channel_y = final.channelGrouping.value_counts(normalize=True)
 summary_time = final.groupby('date').transactionRevenue.sum()
 summary_n = final.groupby('date').transactionRevenue.count()
 
-def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
-                 x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
+# def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
+#                  x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
     
+#     data = go.Scatter(x=x , y=y, name='revenues')
+#     data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='customers')
+
+#     layout = go.Layout(
+#         title='Purchasing over time',
+#         yaxis=dict(
+#             title='revenues'
+#         ),
+#         yaxis2=dict(
+#             title='number of customers',
+#             titlefont=dict(
+#                 color='rgb(148, 103, 189)'
+#             ),
+#             tickfont=dict(
+#                 color='rgb(148, 103, 189)'
+#             ),
+#             overlaying='y',
+#             side='right'
+#         )
+#     )
+
+#     return go.Figure(data=[data, data1], layout=layout)
+    
+
+s1 = {"height": "95%", "width": "95%", 
+                    'display': 'inline-block', 
+                    'text-align': 'center', 
+                    'padding': 1}
+
+# with __name__ app will read from assets folder 
+app = dash.Dash(__name__)  
+
+# calls flask server for deployment
+server=app.server
+
+# start of main program
+app.layout = html.Div( 
+    children = [html.Div([
+    # header
+        html.Span('Google store charts', style={'textAlign': 'center'}, 
+        className='app-title')], 
+        className = 'row header'), 
+    # row 1
+    html.Div(
+        children = [html.Div([
+                #html.H3('Google store charts'),
+                dcc.Graph(
+                    id='g1',
+                    figure={
+                        'data': [go.Bar(
+                                x=channel_x,
+                                y=channel_y,
+                                marker=dict(
+                                    color='rgb(158,202,225)',
+                                    line=dict(
+                                        color='rgb(8,48,107)',
+                                        width=1),
+                                ),
+                                opacity=0.6
+                                )],
+                        'layout': {
+                            'title': 'Customer Sources'}
+                        }, 
+                    style=s1,
+                    config={'displayModeBar': False}
+                    )
+        ], className="five columns offset-by-part chart_div"),
+    
+            html.Div( 
+            children = [
+                dcc.Graph(
+                id='g2',
+                figure={
+                    'data': [
+                            go.Histogram( x = final.transactionRevenue.dropna(), 
+                            xbins=dict(start=0, end=10**9, size = 10000000), 
+                            opacity = 0.7, marker={'color':'red'} 
+                            )
+                    ],
+                            'layout': go.Layout(bargap=0.1, title= 'Revenue Distribution')
+                }, 
+            style=s1,
+            config={'displayModeBar': False} 
+            
+                )
+            ], className="five columns chart_div"),
+        ], className="row"),
+
+    html.Div(
+        html.Div([dcc.Dropdown(
+                        id='yaxis-column',
+                        options=[{'label': i, 'value': i} for i in final.country.unique()],
+                        value='United States')], 
+    style={'display': 'inline-block', 'float': 'left'},
+    className= 'five columns offset-by-part chart_div'),
+    className='row'),
+
+# row 2
+    html.Div([
+        
+        html.Div([
+        
+        dcc.Graph(id='g3',
+        style=s1,
+        config={'displayModeBar': False}
+        )], 
+        className="five columns offset-by-part chart_div"),
+    
+    html.Div( 
+        [dcc.Graph(id='g4', 
+        figure = {'data': [go.Scatter(
+    x = final.visitNumber,
+    y = final.log_transaction,
+    mode = 'markers'
+        )],
+        'layout': go.Layout(
+            title = "Revenue by Number of Visits",
+            xaxis=dict(
+                    range = [0,30]
+                    )
+        )},
+                style=s1,
+                config={'displayModeBar': False}
+                        )], 
+                className="five columns chart_div"),
+    ], className='row')
+])
+
+@app.callback(
+    dash.dependencies.Output('g3', 'figure'),
+    [dash.dependencies.Input('yaxis-column', 'value')]
+)
+
+def create_lines(country):
+    
+    df = final.loc[final.country == country]
+    
+    summary_time = df.groupby('date').transactionRevenue.sum()
+    summary_n = df.groupby('date').transactionRevenue.count()
+    
+    x=pd.to_datetime(summary_time.index, format='%Y%m%d') 
+    y=summary_time
+    x1=pd.to_datetime(summary_n.index, format='%Y%m%d')
+    y1=summary_n
+        
     data = go.Scatter(x=x , y=y, name='revenue')
     data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='count')
 
     layout = go.Layout(
-        title='Purchasing over time',
+        title='Purchasing over time from ' + country,
         yaxis=dict(
             title='revenues'
         ),
@@ -48,115 +193,6 @@ def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summar
     fig = go.Figure(data=[data, data1], layout=layout)
     return fig
 
-# with __name__ app will read from assets folder 
-app = dash.Dash(__name__)  # the name of the folder containing your code and static folder.
-
-# calls flask server for deployment
-server=app.server
-
-# start of main program
-app.layout = html.Div( 
-children = [html.Div([
-# header
-	html.Span('Google store charts', style={'textAlign': 'center'}, 
-	className='app-title')], 
-	className = 'row header'), 
-# row 1
-html.Div(
-    children = [html.Div([
-            #html.H3('Google store charts'),
-            dcc.Graph(
-                id='g1',
-                figure={
-                    'data': [go.Bar(
-                            x=channel_x,
-                            y=channel_y,
-                            #text=channel_y,
-                            #textposition = 'auto',
-                            marker=dict(
-                                color='rgb(158,202,225)',
-                                line=dict(
-                                    color='rgb(8,48,107)',
-                                    width=1),
-                            ),
-                            opacity=0.6
-                            )],
-                    'layout': {
-                        'title': 'Customer Sources'}
-                    }, 
-                style={"height": "95%", "width": "95%", 
-                'display': 'inline-block', 
-                'text-align': 'center', 
-                'padding': 1},
-                config={'displayModeBar': False}
-                )
-    ], className="five columns offset-by-part chart_div"),
-   
-        html.Div(#style = {'backgroundColor':'#D3D3D3'}, 
-        children = [
-            #html.H3('Column 2'),
-            # dcc.Graph(id='g2', figure={'data': [{'y': [1, 2, 3]}]}),
-            dcc.Graph(
-        id='g2',
-        figure={
-            'data': [
-                # {'x': [1, 2, 3], 'y': [4, 1, 2], 'type': 'bar', 'name': 'SF'},
-                # {'x': [1, 2, 3], 'y': [2, 4, 5], 'type': 'bar', 'name': u'Montréal'},
-                    
-                    go.Histogram( x = final.transactionRevenue.dropna(), 
-                    xbins=dict(start=0, end=10**9, size = 10000000), 
-                    opacity = 0.7, marker={'color':'red'} 
-                    )
-                    ],
-                    'layout': go.Layout(bargap=0.1, title= 'Revenue Distribution')
-        }, 
-	style={"height": "95%", "width": "95%", 
-                'display': 'inline-block', 
-                'text-align': 'center',
-                'padding':1},
-        config={'displayModeBar': False} 
-           
-    )
-        ], className="five columns chart_div"),
-    ], className="row"),
-
-# row 2
-    html.Div([
-
-        html.Div(#[html.H4('Line chart'), 
-        [dcc.Graph(id='g3', 
-        figure=create_lines(),
-        style={"height": "95%", "width": "95%", 
-            'display': 'inline-block', 
-            'text-align': 'center',
-            'padding':1},
-        config={'displayModeBar': False}
-                )], 
-        className="five columns offset-by-part chart_div"),
-
-    html.Div( 
-        [dcc.Graph(id='g4', 
-        figure = {'data': [go.Scatter(
-    x = final.visitNumber.dropna(0).sample(1000, replace=True),
-    y = final.log_transaction.dropna(0).sample(1000, replace=True),
-    mode = 'markers'
-        )],
-        'layout': go.Layout(
-            title = "Visit Count at Transaction",
-            xaxis=dict(
-                    range = [0,30]
-                    )
-        )},
-                style={"height": "95%", "width": "95%", 
-                    'padding':1,
-                    'display': 'inline-block'},
-                config={'displayModeBar': False}
-                        )], 
-                className="five columns chart_div"),
-            ], className='row')
-
-           
-])
 
 if __name__ == '__main__':
     app.run_server(debug=True)
