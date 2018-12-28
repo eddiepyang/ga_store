@@ -22,31 +22,31 @@ channel_y = final.channelGrouping.value_counts(normalize=True)
 summary_time = final.groupby('date').transactionRevenue.sum()
 summary_n = final.groupby('date').transactionRevenue.count()
 
-def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
-                 x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
+# def create_lines(x=pd.to_datetime(summary_time.index, format='%Y%m%d'), y=summary_time, 
+#                  x1=pd.to_datetime(summary_n.index, format='%Y%m%d'), y1=summary_n):
     
-    data = go.Scatter(x=x , y=y, name='revenues')
-    data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='customers')
+#     data = go.Scatter(x=x , y=y, name='revenues')
+#     data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='customers')
 
-    layout = go.Layout(
-        title='Purchasing over time',
-        yaxis=dict(
-            title='revenues'
-        ),
-        yaxis2=dict(
-            title='number of customers',
-            titlefont=dict(
-                color='rgb(148, 103, 189)'
-            ),
-            tickfont=dict(
-                color='rgb(148, 103, 189)'
-            ),
-            overlaying='y',
-            side='right'
-        )
-    )
+#     layout = go.Layout(
+#         title='Purchasing over time',
+#         yaxis=dict(
+#             title='revenues'
+#         ),
+#         yaxis2=dict(
+#             title='number of customers',
+#             titlefont=dict(
+#                 color='rgb(148, 103, 189)'
+#             ),
+#             tickfont=dict(
+#                 color='rgb(148, 103, 189)'
+#             ),
+#             overlaying='y',
+#             side='right'
+#         )
+#     )
 
-    return go.Figure(data=[data, data1], layout=layout)
+#     return go.Figure(data=[data, data1], layout=layout)
     
 
 s1 = {"height": "95%", "width": "95%", 
@@ -113,17 +113,26 @@ app.layout = html.Div(
             ], className="five columns chart_div"),
         ], className="row"),
 
+    html.Div(
+        html.Div([dcc.Dropdown(
+                        id='yaxis-column',
+                        options=[{'label': i, 'value': i} for i in final.country.unique()],
+                        value='United States')], 
+    style={'display': 'inline-block', 'float': 'left'},
+    className= 'five columns offset-by-part chart_div'),
+    className='row'),
+
 # row 2
     html.Div([
-
-        html.Div(#[html.H4('Line chart'), 
-        [dcc.Graph(id='g3', 
-        figure=create_lines(),
+        
+        html.Div([
+        
+        dcc.Graph(id='g3',
         style=s1,
         config={'displayModeBar': False}
-                )], 
+        )], 
         className="five columns offset-by-part chart_div"),
-
+    
     html.Div( 
         [dcc.Graph(id='g4', 
         figure = {'data': [go.Scatter(
@@ -141,8 +150,49 @@ app.layout = html.Div(
                 config={'displayModeBar': False}
                         )], 
                 className="five columns chart_div"),
-            ], className='row')
+    ], className='row')
 ])
+
+@app.callback(
+    dash.dependencies.Output('g3', 'figure'),
+    [dash.dependencies.Input('yaxis-column', 'value')]
+)
+
+def create_lines(country):
+    
+    df = final.loc[final.country == country]
+    
+    summary_time = df.groupby('date').transactionRevenue.sum()
+    summary_n = df.groupby('date').transactionRevenue.count()
+    
+    x=pd.to_datetime(summary_time.index, format='%Y%m%d') 
+    y=summary_time
+    x1=pd.to_datetime(summary_n.index, format='%Y%m%d')
+    y1=summary_n
+        
+    data = go.Scatter(x=x , y=y, name='revenue')
+    data1 = go.Scatter(x=x1 , y=y1, yaxis='y2', name='count')
+
+    layout = go.Layout(
+        title='Purchasing over time from ' + country,
+        yaxis=dict(
+            title='revenues'
+        ),
+        yaxis2=dict(
+            title='number of customers',
+            titlefont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            tickfont=dict(
+                color='rgb(148, 103, 189)'
+            ),
+            overlaying='y',
+            side='right'
+        ))
+
+    fig = go.Figure(data=[data, data1], layout=layout)
+    return fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
