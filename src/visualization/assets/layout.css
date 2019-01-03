@@ -42,7 +42,7 @@ body{
 
 .header{
     margin:0px;
-    background-color:#2a3f5f;
+    background-color:hsla(231, 74%, 51%, 0.87);
     height:70px;
     color:white;
     padding-right:2%;

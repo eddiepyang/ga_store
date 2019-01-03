@@ -38,11 +38,20 @@ app.layout = html.Div(
     children = [html.Div([
     
     # header
-    html.Span('Google store charts', style={'textAlign': 'center'}, 
+    html.H5('Web Store Analysis',
     className='app-title')], 
     className = 'row header'), 
 
     # dropdown menu
+    html.Div([html.Span("Select country:", 
+    style={'textAlign': 'left', 'verticalAlign': 'bottom', 'font-size': '14pt'},
+    className='five columns offset-by-part'),
+
+    html.Span("Select range for x-axis:", 
+    style={'textAlign': 'left', 'verticalAlign': 'top', 'font-size': '14pt'},
+    className='five columns')],
+    className='row'),
+
     html.Div([
         html.Div([
             dcc.Dropdown(
@@ -51,7 +60,9 @@ app.layout = html.Div(
                         value='United States')], 
         style = {'display': 'inline-block', 'float': 'left'},
         className= 'five columns offset-by-part chart_div'),
+        
 
+        
         html.Div(
             dcc.RangeSlider(id ='count range',
                         min = 0,
@@ -94,12 +105,13 @@ app.layout = html.Div(
                                 x=channel_x,
                                 y=channel_y,
                                 marker=dict(
-                                    color='rgb(158,202,225)',
+                                    #color='rgb(158,202,225)',
+                                    color = 'green',
                                     line=dict(
                                         color='rgb(8,48,107)',
                                         width=1),
                                 ),
-                                opacity=0.6
+                                opacity=0.5
                                 )],
                         'layout': {
                             'title': 'Customer Sources'}
